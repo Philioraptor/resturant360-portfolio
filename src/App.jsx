@@ -19,10 +19,8 @@ function App() {
       <Navbar onOpenPopup={handleOpenPopup} />
       <Hero />
       <Activation />
-
       <Pricing onOpenPopup={handleOpenPopup} />
       <CTA onOpenPopup={handleOpenPopup} />
-
       <Footer />
       {isPopupOpen && <Popup onClose={handleClosePopup} />}
     </>
