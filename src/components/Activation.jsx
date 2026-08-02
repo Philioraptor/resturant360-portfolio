@@ -6,11 +6,16 @@ const steps = [
   },
   {
     number: "2",
-    title: "Secure Payment",
-    desc: "SSL encrypted payment for complete security."
+    title: "Activation Key",
+    desc: "Enter your unique activation key to verify your license."
   },
   {
     number: "3",
+    title: "Secure Payment",
+    desc: "SSL encrypted checkout for complete security."
+  },
+  {
+    number: "4",
     title: "Receive Access",
     desc: "Get your login credentials instantly by email."
   }
