@@ -139,7 +139,7 @@ function Popup({ onClose }) {
     } catch (err) {
       console.error('Purchase error:', err);
       // Fallback generator in case of unexpected backend issue
-      const mockKey = `RES360-${Math.random().toString(36).substring(2, 6).toUpperCase()}-${Math.random().toString(36).substring(2, 6).toUpperCase()}-${Math.random().toString(36).substring(2, 6).toUpperCase()}`;
+      const mockKey = `R360-${Math.random().toString(36).substring(2, 6).toUpperCase()}-${Math.random().toString(36).substring(2, 6).toUpperCase()}`;
       setGeneratedLicense({
         licenseKey: mockKey,
         planName: currentPlanObj.name,
