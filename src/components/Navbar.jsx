@@ -25,9 +25,13 @@ function Navbar({ onOpenPopup }) {
         <li><a href="#contact-section">Contact</a></li>
       </ul>
 
-      <a href="#cta-section" className="nav-btn">
-        Get Started
-      </a>
+      <button
+        onClick={onOpenPopup}
+        className="nav-btn"
+        style={{ border: "none", cursor: "pointer" }}
+      >
+        Renew / Get License
+      </button>
     </nav>
   );
 }

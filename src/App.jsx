@@ -17,12 +17,10 @@ function App() {
   return (
     <>
       <Navbar onOpenPopup={handleOpenPopup} />
-      <Hero />
+      <Hero onOpenPopup={handleOpenPopup} />
       <Activation />
-
       <Pricing onOpenPopup={handleOpenPopup} />
       <CTA onOpenPopup={handleOpenPopup} />
-
       <Footer />
       {isPopupOpen && <Popup onClose={handleClosePopup} />}
     </>

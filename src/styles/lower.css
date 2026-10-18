@@ -12,6 +12,7 @@ body{
     font-family: 'Poppins', sans-serif;
     background: linear-gradient(180deg, #ffffff 0%, #f4f5f7 100%);
     color:#222;
+    overflow-x: hidden;
 }
 
 img{
@@ -21,8 +22,55 @@ img{
 
 button{
     cursor:pointer;
-    transition:.3s ease;
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s ease, background 0.3s ease;
     border:none;
+}
+
+/* ======================================
+   KEYFRAME ANIMATIONS
+====================================== */
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes floatSlow {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-8px);
+    }
+}
+
+@keyframes pulseGlow {
+    0%, 100% {
+        box-shadow: 0 10px 24px rgba(255, 107, 0, 0.3),
+                    inset 0 2px 4px rgba(255, 255, 255, 0.4);
+    }
+    50% {
+        box-shadow: 0 16px 36px rgba(255, 107, 0, 0.5),
+                    inset 0 2px 4px rgba(255, 255, 255, 0.6);
+    }
+}
+
+@keyframes pulseRing {
+    0% {
+        box-shadow: 0 0 0 0 rgba(255, 107, 0, 0.4), 0 10px 20px rgba(255, 107, 0, 0.2);
+    }
+    70% {
+        box-shadow: 0 0 0 14px rgba(255, 107, 0, 0), 0 10px 20px rgba(255, 107, 0, 0.2);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(255, 107, 0, 0), 0 10px 20px rgba(255, 107, 0, 0.2);
+    }
 }
 
 /* ======================================
@@ -30,530 +78,151 @@ button{
 ====================================== */
 
 .activation{
-    padding:80px 8%;
+    padding: 55px 8%;
     max-width:1280px;
     margin:0 auto;
     text-align:center;
     background:transparent;
+    animation: fadeInUp 0.8s ease-out forwards;
 }
 
 .activation h2{
-    font-size:42px;
+    font-size:40px;
     font-weight:800;
-    margin-bottom:12px;
+    margin-bottom:10px;
     color:#111;
+    letter-spacing: -0.5px;
 }
 
 .activation>p{
     color:#666;
-    font-size:17px;
-    margin-bottom:60px;
+    font-size:16px;
+    margin-bottom:45px;
 }
 
 .steps{
     position:relative;
     display:flex;
     justify-content:space-between;
-
-    gap:40px;
-    position:relative;
-
-    gap:30px;
-
+    gap:28px;
 }
 
 .steps::before{
     content:"";
     position:absolute;
-    top:40px;
-
-    left:16%;
-    width:68%;
-    height:3px;
-    background:#e5e7eb;
-    z-index:0;
-
-    left:15%;
-    width:70%;
+    top:38px;
+    left:12%;
+    width:76%;
     height:3px;
     background:linear-gradient(90deg, #ffe0cc, #ff6b00, #ffe0cc);
     z-index:0;
     border-radius:3px;
-
 }
 
-.step{
-    position:relative;
-    z-index:1;
-}
 .step{
     flex:1;
-
-    background:#fff;
-    padding:35px 25px;
-    border-radius:20px;
-    box-shadow:0 10px 25px rgba(0,0,0,.08);
-    transition:0.3s ease;
-}
-
-.step:hover{
-    transform:translateY(-10px);
-    box-shadow:0 20px 40px rgba(0,0,0,.15);
-
     background:#ffffff;
-    padding:35px 25px;
+    padding:32px 20px;
     border-radius:28px;
     border:1.5px solid rgba(0, 0, 0, 0.08);
     box-shadow:0 14px 30px rgba(0,0,0,0.06),
                inset 0 2px 4px rgba(255,255,255,0.9),
                inset 0 -2px 4px rgba(0,0,0,0.03);
-    transition:transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+    transition:transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.35s ease, border-color 0.35s ease;
     position:relative;
     z-index:1;
+    animation: fadeInUp 0.8s ease-out forwards;
 }
+
+.step:nth-child(1) { animation-delay: 0.1s; }
+.step:nth-child(2) { animation-delay: 0.2s; }
+.step:nth-child(3) { animation-delay: 0.3s; }
+.step:nth-child(4) { animation-delay: 0.4s; }
 
 .step:hover{
-    transform:translateY(-6px);
-    border-color:rgba(255, 107, 0, 0.35);
-    box-shadow:0 20px 40px rgba(255,107,0,0.12),
+    transform:translateY(-8px) scale(1.02);
+    border-color:rgba(255, 107, 0, 0.4);
+    box-shadow:0 22px 44px rgba(255,107,0,0.15),
                inset 0 2px 4px rgba(255,255,255,1);
-
 }
 
-.step:hover .circle{
-    background:#ff7a00;
-    color:white;
-}
 .circle{
-
-    width:80px;
-    height:80px;
-    border:3px solid #ff7a00;
-
-    width:75px;
-    height:75px;
+    width:70px;
+    height:70px;
     border:2.5px solid #ff6b00;
-
     border-radius:50%;
     display:flex;
-    justify-content:center;
-
     align-items:center;
-    margin:auto;
-    font-size:28px;
-    font-weight:700;
-    background:#fff;
-    color:#ff7a00;
-    transition:.3s;
-
-    margin:0 auto 20px auto;
+    justify-content:center;
+    margin:0 auto 18px auto;
     color:#ff6b00;
-    font-size:26px;
+    font-size:24px;
     font-weight:800;
     position:relative;
     z-index:2;
     background:white;
-    box-shadow:0 10px 20px rgba(255,107,0,0.2),
-               inset 0 -2px 6px rgba(0,0,0,0.08);
-    transition:transform 0.3s ease, box-shadow 0.3s ease;
+    animation: pulseRing 2.5s infinite;
+    transition:transform 0.3s ease, background 0.3s ease, color 0.3s ease;
 }
 
-.circle:hover{
-    transform:scale(1.08);
-    box-shadow:0 14px 28px rgba(255,107,0,0.3);
-
+.step:hover .circle{
+    transform:scale(1.1);
+    background:#ff6b00;
+    color:white;
 }
 
 .step h3{
-    margin-top:10px;
-    margin-bottom:12px;
-    font-size:22px;
+    margin-top:8px;
+    margin-bottom:10px;
+    font-size:21px;
     font-weight:700;
     color:#111;
 }
 
 .step p{
     color:#666;
-    font-size:15px;
+    font-size:14px;
     line-height:1.6;
 }
 
-
-/*==========================
-Pricing
-==========================*/
-
-.pricing{
-    padding:100px 8%;
-    background:#fafafa;
-}
-
-.pricing-header{
-    text-align:center;
-    margin-bottom:60px;
-}
-
-.pricing-tag{
-    display:inline-block;
-    padding:8px 18px;
-    border-radius:30px;
-    background:#fff4ea;
-    color:#ff7a00;
-    font-weight:600;
-    margin-bottom:15px;
-}
-
-.pricing-header h2{
-    font-size:42px;
-    margin-bottom:15px;
-}
-
-.pricing-header p{
-    color:#666;
-}
-
-/* Card */
-
-.pricing-card{
-
-    max-width:1200px;
-}
 /* ======================================
    PRICING - Claymorphism
 ====================================== */
 
 .pricing{
-    padding:80px 8%;
+    padding: 55px 8%;
     max-width:1280px;
     margin:0 auto;
     background:transparent;
+    animation: fadeInUp 0.9s ease-out forwards;
 }
 
 .price-card{
     max-width:850px;
-
     margin:auto;
-
-    background:white;
-
-    border-radius:28px;
-
-    padding:45px;
-
-    display:grid;
-
-    grid-template-columns:1.1fr 2fr 1fr;
-
-    gap:40px;
-
-    align-items:center;
-
-
-    box-shadow:0 20px 45px rgba(0,0,0,.08);
-
-    transition:.35s;
-
-}
-
-.pricing-card:hover{
-
-    transform:translateY(-8px);
-
-    box-shadow:0 30px 60px rgba(0,0,0,.12);
-
-}
-
-.badge{
-
-    display:inline-block;
-
-    background:#ff7a00;
-
-    color:white;
-
-    padding:8px 18px;
-
-    border-radius:30px;
-
-    margin-bottom:20px;
-
-}
-
-.pricing-left h2{
-
-    margin-bottom:20px;
-
-}
-
-.pricing-left h1{
-
-    font-size:60px;
-
-    color:#111827;
-
-}
-
-.pricing-left span{
-
-    font-size:20px;
-
-    color:#777;
-
-}
-
-.pricing-features{
-
-    display:grid;
-
-    grid-template-columns:repeat(2,1fr);
-
-    gap:15px;
-
-}
-
-.pricing-features div{
-
-    background:#f8f8f8;
-
-    padding:18px;
-
-    border-radius:15px;
-
-    transition:.3s;
-
-}
-
-.pricing-features div:hover{
-
-    background:#fff3e8;
-
-    transform:translateY(-5px);
-
-}
-
-.pricing-action{
-
-    text-align:center;
-
-}
-
-.pricing-action button{
-
-    width:100%;
-
-    background:#ff7a00;
-
-    color:white;
-
-    padding:18px;
-
-    border-radius:50px;
-
-    font-size:17px;
-
-    font-weight:600;
-
-    transition:.35s;
-
-}
-
-.pricing-action button:hover{
-
-    background:#e86d00;
-
-    transform:translateY(-4px);
-
-    box-shadow:0 15px 30px rgba(255,122,0,.35);
-
-}
-
-.pricing-action small{
-
-    display:block;
-
-    margin-top:20px;
-
-    color:#777;
-
-}
-.service{
-    padding:100px 8%;
-    background:#f3f4f6;
-}
-
-.content{
     display:flex;
+    justify-content:space-between;
     align-items:center;
-    background:#1f2937;
-    border-radius:25px;
-    overflow:hidden;
-}
-
-.text{
-    flex:1;
-    padding:70px;
-    color:#fff;
-}
-
-.text h2{
-    font-size:46px;
-    line-height:1.2;
-    margin-bottom:25px;
-}
-
-.text p{
-    color:#d1d5db;
-    line-height:1.8;
-    margin-bottom:35px;
-}
-
-.buttons{
-    display:flex;
-    gap:20px;
-}
-
-.demo{
-    background:#ff7a00;
-    color:#fff;
-    padding:15px 30px;
-    border-radius:8px;
-}
-
-.demo:hover{
-    background:#e76d00;
-}
-
-.sales{
-    background:transparent;
-    color:#fff;
-    border:2px solid #fff;
-    padding:15px 30px;
-    border-radius:8px;
-}
-
-.sales:hover{
-    background:#fff;
-    color:#222;
-}
-
-.content img{
-    width:50%;
-    height:500px;
-    object-fit:cover;
-}
-
-.footer{
-    background:#fff;
-    padding-top:80px;
-}
-
-.footer-grid{
-    width:90%;
-    margin:auto;
-    display:grid;
-    grid-template-columns:2fr 1fr 1fr 2fr;
-    gap:50px;
-    padding-bottom:60px;
-}
-
-.footer-grid h2{
-    font-size:34px;
-}
-
-.footer-grid span{
-    color:#ff7a00;
-}
-
-.footer-grid h3{
-    margin-bottom:20px;
-}
-
-.footer-grid p{
-    margin-bottom:12px;
-    color:#666;
-    transition:.3s;
-    cursor:pointer;
-}
-.footer-grid p:hover{
-    color:#ff7a00;
-    transform:translateX(6px);
-}
-
-.footer-grid input{
-    width:100%;
-    padding:14px;
-    border:1px solid #ddd;
-    border-radius:8px;
-    margin-bottom:15px;
-}
-
-.footer-grid button{
-    width:100%;
-    background:#ff7a00;
-    color:#fff;
-    padding:14px;
-    border-radius:8px;
-}
-
-.footer-grid button:hover{
-    background:#e76d00;
-}
-
-.copyright{
-    border-top:1px solid #eee;
-    text-align:center;
-    padding:20px;
-    color:#666;
-}
-
-@media(max-width:992px){
-
-.steps{
-    flex-direction:column;
-}
-
-.price-card{
-    flex-direction:column;
-    border-radius:20px;
-}
-
-.price-card button{
-    width:100%;
-}
-
-.content{
-    flex-direction:column;
-}
-
-.content img{
-    width:100%;
-}
-
-.footer-grid{
-    grid-template-columns:1fr 1fr;
-}
-
-
-    /* background:linear-gradient(135deg, #ffffff 0%, #fbfbfb 100%);
+    background:linear-gradient(135deg, #ffffff 0%, #fbfbfb 100%);
     border:2px solid rgba(255, 107, 0, 0.25);
-    border-radius:40px;
-    padding:30px 40px;
+    border-radius:36px;
+    padding:28px 40px;
     box-shadow:0 20px 45px rgba(255, 107, 0, 0.1),
                0 6px 18px rgba(0, 0, 0, 0.05),
                inset 0 2px 4px rgba(255, 255, 255, 0.9),
                inset 0 -3px 8px rgba(0, 0, 0, 0.04);
-    transition:transform 0.35s ease, box-shadow 0.35s ease, border-color 0.35s ease;
-} */
+    transition:transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.35s ease, border-color 0.35s ease;
+}
 
 .price-card:hover{
-    transform:translateY(-5px);
-    border-color:rgba(255, 107, 0, 0.5);
-    box-shadow:0 28px 55px rgba(255, 107, 0, 0.18),
+    transform:translateY(-6px);
+    border-color:rgba(255, 107, 0, 0.55);
+    box-shadow:0 28px 55px rgba(255, 107, 0, 0.22),
                0 10px 24px rgba(0, 0, 0, 0.08);
 }
 
 .price-card .left h2{
-    font-size:32px;
+    font-size:30px;
     font-weight:800;
     color:#111;
 }
@@ -561,22 +230,21 @@ Pricing
 .price-card button{
     background:linear-gradient(135deg, #ff6b00, #ff8c00);
     color:#fff;
-    padding:18px 36px;
-    font-size:17px;
+    padding:16px 36px;
+    font-size:16px;
     font-weight:700;
     border-radius:50px;
     border:1px solid rgba(255, 255, 255, 0.4);
     box-shadow:0 10px 24px rgba(255, 107, 0, 0.3),
                inset 0 2px 4px rgba(255, 255, 255, 0.4),
                inset 0 -2px 6px rgba(0, 0, 0, 0.15);
-    transition:background 0.3s, transform 0.3s, box-shadow 0.3s;
+    animation: pulseGlow 3s infinite ease-in-out;
 }
 
 .price-card button:hover{
     background:linear-gradient(135deg, #e76d00, #ff6b00);
-    transform:translateY(-3px);
-    box-shadow:0 14px 30px rgba(255, 107, 0, 0.4);
-
+    transform:translateY(-3px) scale(1.02);
+    box-shadow:0 16px 36px rgba(255, 107, 0, 0.45);
 }
 
 /* ======================================
@@ -584,10 +252,11 @@ Pricing
 ====================================== */
 
 .service-cta {
-  padding: 80px 8%;
+  padding: 55px 8%;
   max-width: 1280px;
   margin: 0 auto;
   background: transparent;
+  animation: fadeInUp 1s ease-out forwards;
 }
 
 .cta-container {
@@ -601,99 +270,95 @@ Pricing
   box-shadow: 0 24px 50px rgba(0, 0, 0, 0.25),
               inset 0 2px 4px rgba(255, 255, 255, 0.1),
               inset 0 -3px 8px rgba(0, 0, 0, 0.3);
-  transition: transform 0.35s ease, box-shadow 0.35s ease;
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.35s ease;
 }
 
 .cta-container:hover {
-  transform: translateY(-5px);
+  transform: translateY(-6px);
   box-shadow: 0 32px 65px rgba(0, 0, 0, 0.35);
 }
 
 .cta-content {
   flex: 1;
-  padding: 60px;
+  padding: 50px;
   color: #fff;
 }
 
 .cta-content h2 {
-  font-size: 40px;
+  font-size: 38px;
   font-weight: 800;
-  margin-bottom: 20px;
+  margin-bottom: 18px;
   line-height: 1.2;
   letter-spacing: -0.5px;
 }
 
 .cta-content p {
-  font-size: 17px;
+  font-size: 16px;
   line-height: 1.7;
   color: #d1d5db;
-  margin-bottom: 35px;
+  margin-bottom: 30px;
 }
 
 .cta-buttons {
   display: flex;
-  gap: 20px;
+  gap: 18px;
 }
 
 .service-cta .primary-btn {
   background: linear-gradient(135deg, #ff6b00, #ff8c00);
   color: #fff;
   border: 1px solid rgba(255, 255, 255, 0.3);
-  padding: 16px 36px;
+  padding: 15px 34px;
   border-radius: 50px;
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 700;
   cursor: pointer;
   box-shadow: 0 10px 24px rgba(255, 107, 0, 0.35),
               inset 0 2px 4px rgba(255, 255, 255, 0.4);
-  transition: 0.3s ease;
 }
 
 .service-cta .primary-btn:hover {
-  transform: translateY(-3px);
+  transform: translateY(-3px) scale(1.02);
   box-shadow: 0 14px 30px rgba(255, 107, 0, 0.45);
 }
 
 .service-cta .secondary-btn {
   background: rgba(255, 255, 255, 0.08);
   backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   color: white;
   border: 1.5px solid rgba(255, 255, 255, 0.4);
-  padding: 16px 36px;
+  padding: 15px 34px;
   border-radius: 50px;
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 700;
   cursor: pointer;
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2),
               inset 0 1px 2px rgba(255, 255, 255, 0.3);
-  transition: 0.3s ease;
 }
 
 .service-cta .secondary-btn:hover {
   background: white;
   color: #111827;
-  transform: translateY(-3px);
+  transform: translateY(-3px) scale(1.02);
   box-shadow: 0 12px 28px rgba(255, 255, 255, 0.25);
 }
 
 .cta-image {
   flex: 1;
-  height: 480px;
+  height: 440px;
+  overflow: hidden;
 }
 
 .cta-image img {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: 0.4s ease;
+  transition: transform 0.5s ease;
 }
 
 .cta-image img:hover {
-
-  transform: scale(1.08);
-
-  transform: scale(1.04);
-
+  transform: scale(1.06);
 }
 
 /* ======================================
@@ -703,7 +368,7 @@ Pricing
 footer{
     background:#ffffff;
     border-top:1.5px solid rgba(0, 0, 0, 0.08);
-    padding-top:70px;
+    padding-top:60px;
     box-shadow:0 -10px 30px rgba(0, 0, 0, 0.03);
 }
 
@@ -714,11 +379,11 @@ footer{
     display:grid;
     grid-template-columns:2fr 1fr 1fr 2fr;
     gap:40px;
-    padding-bottom:60px;
+    padding-bottom:50px;
 }
 
 .footer-grid h2{
-    font-size:32px;
+    font-size:30px;
     font-weight:800;
 }
 
@@ -727,213 +392,46 @@ footer{
 }
 
 .footer-grid h3{
-    margin-bottom:20px;
-    font-size:18px;
+    margin-bottom:18px;
+    font-size:17px;
     font-weight:700;
 }
 
 .footer-grid p{
-    margin-bottom:12px;
+    margin-bottom:10px;
     color:#666;
-    font-size:15px;
+    font-size:14px;
+    transition: color 0.2s ease, transform 0.2s ease;
+    cursor: pointer;
+}
+
+.footer-grid p:hover {
+    color: #ff6b00;
+    transform: translateX(4px);
 }
 
 .footer-grid input{
     width:100%;
-    padding:14px 18px;
+    padding:13px 16px;
     border:1px solid #ddd;
     border-radius:14px;
-    margin-bottom:12px;
+    margin-bottom:10px;
     font-size:14px;
     outline:none;
     box-shadow:inset 0 2px 4px rgba(0,0,0,0.05);
-}
-
-
-  .primary-btn,
-  .secondary-btn {
-    width: 220px;
-  }
-}
-
-/* =============================
-   ACTIVATION
-============================= */
-
-.activation{
-    padding:100px 8%;
-    text-align:center;
-    background:#fafafa;
-}
-.activation::before{
-    content:"";
-    position:absolute;
-    width:300px;
-    height:300px;
-    background:#ff7a0010;
-    border-radius:50%;
-    top:-100px;
-    left:-100px;
-    filter:blur(80px);
-}
-
-.activation-header span{
-    display:inline-block;
-    background:#fff3e8;
-    color:#ff7a00;
-    padding:8px 18px;
-    border-radius:30px;
-    font-weight:600;
-    margin-bottom:18px;
-}
-
-.activation-header h2{
-    font-size:46px;
-    margin-bottom:15px;
-}
-
-.activation-header p{
-    max-width:600px;
-    margin:auto;
-    color:#666;
-    line-height:1.7;
-    margin-bottom:70px;
-}
-
-.steps{
-    display:flex;
-    gap:30px;
-    justify-content:center;
-    position:relative;
-}
-
-.steps::before{
-    content:"";
-    position:absolute;
-    top:38px;
-    left:15%;
-    width:70%;
-    height:4px;
-    background:#e5e7eb;
-    border-radius:10px;
-}
-
-.steps::after{
-    content:"";
-    position:absolute;
-    top:38px;
-    left:15%;
-    width:0%;
-    height:4px;
-    border-radius:10px;
-    background:#ff7a00;
-    animation:progressLine 2.5s ease forwards;
-}
-
-@keyframes progressLine{
-    from{
-        width:0%;
-    }
-    to{
-        width:70%;
-    }
-}
-
-.step{
-    flex:1;
-    max-width:320px;
-    background:white;
-    padding:35px;
-    border-radius:24px;
-    box-shadow:0 12px 30px rgba(0,0,0,.08);
-    transition:
-        transform .45s ease,
-        box-shadow .45s ease,
-        border-color .45s ease;
-    border:2px solid transparent;
-}
-
-.step:hover{
-    transform:translateY(-12px) scale(1.03);
-    box-shadow:0 30px 60px rgba(0,0,0,.15);
-    border-color:#ff7a00;
-}
-
-.circle{
-    width:70px;
-    height:70px;
-    margin:auto;
-    border-radius:50%;
-    background:#ff7a00;
-    color:white;
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    font-size:26px;
-    font-weight:700;
-     animation:pulse 2s infinite;
-}
-@keyframes pulse{
-    0%{
-        box-shadow:0 0 0 0 rgba(255,122,0,.5);
-    }
-    70%{
-        box-shadow:0 0 0 18px rgba(255,122,0,0);
-    }
-    100%{
-        box-shadow:0 0 0 0 rgba(255,122,0,0);
-    }
-}
-.icon{
-    font-size:40px;
-    margin:20px 0;
-    transition:.4s;
-}
-
-.step:hover .icon{
-    transform:translateY(-8px) scale(1.15);
-}
-
-.step h3{
-    margin-bottom:15px;
-    font-size:22px;
-}
-
-.step p{
-    color:#666;
-    line-height:1.7;
-}
-
-.activate-btn{
-    margin-top:60px;
-    background:#ff7a00;
-    color:white;
-    padding:18px 40px;
-    border:none;
-    border-radius:50px;
-    font-size:17px;
-    font-weight:600;
-    transition:.3s;
-    box-shadow:0 15px 30px rgba(255,122,0,.30);
-}
-
-.activate-btn:hover{
-    background:#e86d00;
-    transform:translateY(-4px);
 }
 
 .footer-grid button{
     width:100%;
     background:linear-gradient(135deg, #ff6b00, #ff8c00);
     color:#fff;
-    padding:14px;
+    padding:13px;
     font-size:15px;
     font-weight:700;
     border-radius:14px;
     border:none;
     box-shadow:0 8px 18px rgba(255,107,0,0.25),
                inset 0 -2px 4px rgba(0,0,0,0.1);
-    transition:transform 0.3s, box-shadow 0.3s;
 }
 
 .footer-grid button:hover{
@@ -944,6 +442,23 @@ footer{
 .copyright{
     border-top:1px solid #eee;
     text-align:center;
-    padding:20px;
+    padding:18px;
     color:#666;
+    font-size: 14px;
+}
+
+/* Responsive Styles */
+@media (max-width: 992px) {
+  .steps { flex-direction: column; }
+  .price-card { flex-direction: column; text-align: center; gap: 20px; }
+  .cta-container { flex-direction: column; }
+  .cta-content { text-align: center; padding: 35px; }
+  .cta-buttons { justify-content: center; }
+  .footer-grid { grid-template-columns: 1fr 1fr; }
+}
+
+@media (max-width: 768px) {
+  .footer-grid { grid-template-columns: 1fr; }
+  .cta-content h2 { font-size: 28px; }
+  .cta-buttons { flex-direction: column; }
 }

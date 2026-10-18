@@ -1,7 +1,7 @@
 import "../styles/Hero.css";
 import BentoGrid from "./BentoGrid";
 
-function Hero() {
+function Hero({ onOpenPopup }) {
   return (
     <section className="hero">
       <div className="hero-left">
@@ -21,9 +21,13 @@ function Hero() {
           technology.
         </p>
         <div className="hero-buttons">
-          <a href="#pricing-section" className="primary-btn" style={{ textDecoration: 'none' }}>
-            View Plans
-          </a>
+          <button
+            onClick={onOpenPopup}
+            className="primary-btn"
+            style={{ border: 'none', cursor: 'pointer' }}
+          >
+            View Plans & Renew
+          </button>
           <a href="#cta-section" className="secondary-btn" style={{ textDecoration: 'none' }}>
             ▶ Book a Demo
           </a>
