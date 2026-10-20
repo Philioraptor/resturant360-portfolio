@@ -17,6 +17,7 @@ function Popup({ onClose }) {
   const [cardNumber, setCardNumber] = useState('•••• •••• •••• 4242');
   const [upiId, setUpiId] = useState('restaurant@upi');
   const [payLoading, setPayLoading] = useState(false);
+  const [paymentError, setPaymentError] = useState('');
 
   // Success / License Voucher state
   const [generatedLicense, setGeneratedLicense] = useState(null);
@@ -72,46 +73,54 @@ function Popup({ onClose }) {
     setStep(3); // Proceed to Payment
   };
 
-  // Step 3: Complete Payment & Generate Encrypted License Key
-  const handlePayment = async (e) => {
-    e.preventDefault();
+  // Step 3: Interactive Payment Gateway Simulation (Supports Success & Failure)
+  const handlePayment = async (outcome = 'SUCCESS') => {
     setPayLoading(true);
+    setPaymentError('');
 
     try {
-      const res = await fetch(`${API_BASE_URL}/license/purchase`, {
+      // 1. Create Gateway Order
+      const orderRes = await fetch(`${API_BASE_URL}/payment/create-order`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          email: email.trim(),
           name: name.trim(),
+          email: email.trim(),
           planId: selectedPlan,
-          paymentDetails: {
-            method: paymentMethod,
-            account: paymentMethod === 'card' ? cardNumber : upiId,
-            phone: phone.trim()
-          }
         }),
       });
 
-      const data = await res.json();
-
-      if (!res.ok || !data.success) {
-        throw new Error(data.message || 'Payment processing failed.');
+      const orderData = await orderRes.json();
+      if (!orderRes.ok || !orderData.success) {
+        throw new Error(orderData.message || 'Payment order initiation failed.');
       }
 
-      setGeneratedLicense(data.data);
-      setStep(4); // Move to Step 4: License Key Voucher!
-    } catch (err) {
-      console.error('Purchase error:', err);
-      // Fallback cryptographic generator in case backend is offline
-      const mockKey = `R360-Y${Math.random().toString(36).substring(2, 5).toUpperCase()}-${Math.random().toString(36).substring(2, 6).toUpperCase()}`;
-      setGeneratedLicense({
-        licenseKey: mockKey,
-        planName: currentPlanObj.name,
-        durationDays: currentPlanObj.duration,
-        pricePaid: currentPlanObj.rawPrice,
+      // 2. Gateway Verification (Simulates Success or Decline)
+      const verifyRes = await fetch(`${API_BASE_URL}/payment/verify`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          orderId: orderData.data.orderId,
+          transactionId: orderData.data.transactionId,
+          status: outcome,
+          failureReason: outcome === 'FAILED' ? 'Bank transaction declined (ERR_INSUFFICIENT_FUNDS)' : null,
+          paymentMethod,
+        }),
       });
+
+      const verifyData = await verifyRes.json();
+
+      if (!verifyRes.ok || !verifyData.success) {
+        setPaymentError(verifyData.message || 'Transaction was declined by issuing bank. No license code issued.');
+        return;
+      }
+
+      // Payment Success: Store generated license details and move to Step 4
+      setGeneratedLicense(verifyData.data);
       setStep(4);
+    } catch (err) {
+      console.error('Payment error:', err);
+      setPaymentError(err.message || 'Payment gateway connection error.');
     } finally {
       setPayLoading(false);
     }
@@ -415,21 +424,25 @@ function Popup({ onClose }) {
                     boxShadow: '0 8px 18px rgba(255, 107, 0, 0.25)'
                   }}
                 >
-                  Continue to Payment →
+                  Continue to Payment Window →
                 </button>
               </div>
             </form>
           </div>
         )}
 
-        {/* ================= STEP 3: PAYMENT SIMULATION ================= */}
+        {/* ================= STEP 3: PAYMENT GATEWAY WINDOW ================= */}
         {step === 3 && (
           <div>
-            <h2 style={{ fontSize: '24px', fontWeight: '800', color: '#111', marginBottom: '4px' }}>
-              Complete <span style={{ color: '#ff6b00' }}>Recharge Payment</span>
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '4px 12px', background: '#ecfdf5', borderRadius: '20px', color: '#047857', fontSize: '12px', fontWeight: '700', marginBottom: '10px' }}>
+              🔒 256-Bit SSL Encrypted Payment Gateway
+            </div>
+
+            <h2 style={{ fontSize: '23px', fontWeight: '800', color: '#111', margin: '0 0 4px' }}>
+              Payment <span style={{ color: '#ff6b00' }}>Verification Window</span>
             </h2>
-            <p style={{ color: '#666', fontSize: '13.5px', marginBottom: '16px' }}>
-              Your encrypted license key will be issued immediately after checkout.
+            <p style={{ color: '#666', fontSize: '13px', marginBottom: '16px' }}>
+              Choose payment mode and verify transaction to unlock your software license key:
             </p>
 
             {/* Order Summary Box */}
@@ -439,14 +452,33 @@ function Popup({ onClose }) {
                 <strong style={{ fontSize: '13px', color: '#1e293b' }}>{name} ({email})</strong>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
-                <span style={{ fontSize: '13px', color: '#64748b' }}>Plan:</span>
+                <span style={{ fontSize: '13px', color: '#64748b' }}>Selected Plan:</span>
                 <strong style={{ fontSize: '13px', color: '#1e293b' }}>{currentPlanObj.name} ({currentPlanObj.duration})</strong>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px solid #e2e8f0', paddingTop: '8px', marginTop: '4px' }}>
-                <span style={{ fontSize: '14px', fontWeight: '700', color: '#1e293b' }}>Total Due:</span>
-                <strong style={{ fontSize: '16px', fontWeight: '800', color: '#ff6b00' }}>${currentPlanObj.rawPrice}.00 USD</strong>
+                <span style={{ fontSize: '14px', fontWeight: '700', color: '#1e293b' }}>Amount Payable:</span>
+                <strong style={{ fontSize: '17px', fontWeight: '800', color: '#ff6b00' }}>${currentPlanObj.rawPrice}.00 USD</strong>
               </div>
             </div>
+
+            {/* Payment Failure Alert */}
+            {paymentError && (
+              <div
+                style={{
+                  background: '#fef2f2',
+                  border: '1.5px solid #ef4444',
+                  borderRadius: '12px',
+                  padding: '12px 14px',
+                  color: '#991b1b',
+                  fontSize: '12.5px',
+                  textAlign: 'left',
+                  marginBottom: '16px',
+                  lineHeight: '1.4'
+                }}
+              >
+                <strong>⚠️ Payment Gateway Error:</strong> {paymentError}
+              </div>
+            )}
 
             {/* Payment Method Selector */}
             <div style={{ display: 'flex', gap: '8px', marginBottom: '14px' }}>
@@ -460,11 +492,11 @@ function Popup({ onClose }) {
                   border: paymentMethod === 'card' ? '2px solid #ff6b00' : '1px solid #d1d5db',
                   background: paymentMethod === 'card' ? 'rgba(255, 107, 0, 0.05)' : '#fff',
                   fontWeight: '600',
-                  fontSize: '13px',
+                  fontSize: '12.5px',
                   cursor: 'pointer'
                 }}
               >
-                💳 Credit / Debit Card
+                💳 Debit / Credit Card
               </button>
               <button
                 type="button"
@@ -476,7 +508,7 @@ function Popup({ onClose }) {
                   border: paymentMethod === 'upi' ? '2px solid #ff6b00' : '1px solid #d1d5db',
                   background: paymentMethod === 'upi' ? 'rgba(255, 107, 0, 0.05)' : '#fff',
                   fontWeight: '600',
-                  fontSize: '13px',
+                  fontSize: '12.5px',
                   cursor: 'pointer'
                 }}
               >
@@ -484,10 +516,10 @@ function Popup({ onClose }) {
               </button>
             </div>
 
-            <form onSubmit={handlePayment} style={{ textAlign: 'left' }}>
+            <div style={{ textAlign: 'left', marginBottom: '18px' }}>
               {paymentMethod === 'card' ? (
-                <div style={{ marginBottom: '16px' }}>
-                  <label style={{ display: 'block', fontSize: '12.5px', fontWeight: '600', color: '#4b5563', marginBottom: '6px' }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: '#4b5563', marginBottom: '5px' }}>
                     Card Number (Demo Checkout):
                   </label>
                   <input
@@ -496,18 +528,18 @@ function Popup({ onClose }) {
                     onChange={(e) => setCardNumber(e.target.value)}
                     style={{
                       width: '100%',
-                      padding: '11px 14px',
+                      padding: '10px 14px',
                       borderRadius: '10px',
                       border: '1.5px solid #d1d5db',
-                      fontSize: '14px',
+                      fontSize: '13.5px',
                       boxSizing: 'border-box'
                     }}
                   />
                 </div>
               ) : (
-                <div style={{ marginBottom: '16px' }}>
-                  <label style={{ display: 'block', fontSize: '12.5px', fontWeight: '600', color: '#4b5563', marginBottom: '6px' }}>
-                    UPI Virtual Payment Address (VPA):
+                <div>
+                  <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: '#4b5563', marginBottom: '5px' }}>
+                    UPI Virtual Payment Address:
                   </label>
                   <input
                     type="text"
@@ -515,55 +547,72 @@ function Popup({ onClose }) {
                     onChange={(e) => setUpiId(e.target.value)}
                     style={{
                       width: '100%',
-                      padding: '11px 14px',
+                      padding: '10px 14px',
                       borderRadius: '10px',
                       border: '1.5px solid #d1d5db',
-                      fontSize: '14px',
+                      fontSize: '13.5px',
                       boxSizing: 'border-box'
                     }}
                   />
                 </div>
               )}
+            </div>
 
-              <div style={{ display: 'flex', gap: '10px' }}>
-                <button
-                  type="button"
-                  onClick={() => setStep(2)}
-                  style={{
-                    flex: '1',
-                    background: '#f3f4f6',
-                    color: '#4b5563',
-                    padding: '13px',
-                    borderRadius: '50px',
-                    fontSize: '14px',
-                    fontWeight: '600',
-                    border: 'none',
-                    cursor: 'pointer'
-                  }}
-                >
-                  ← Back
-                </button>
+            {/* Dual Gateway Action Buttons: SUCCESS vs FAILURE SIMULATION */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '9px' }}>
+              <button
+                type="button"
+                disabled={payLoading}
+                onClick={() => handlePayment('SUCCESS')}
+                style={{
+                  width: '100%',
+                  background: 'linear-gradient(135deg, #10b981, #059669)',
+                  color: '#fff',
+                  padding: '13px',
+                  borderRadius: '50px',
+                  fontSize: '14.5px',
+                  fontWeight: '700',
+                  border: 'none',
+                  cursor: payLoading ? 'not-allowed' : 'pointer',
+                  boxShadow: '0 8px 18px rgba(16, 185, 129, 0.25)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '8px'
+                }}
+              >
+                {payLoading ? 'Verifying Transaction with Bank...' : `✓ Pay $${currentPlanObj.rawPrice} (Verify & Issue License)`}
+              </button>
 
-                <button
-                  type="submit"
-                  disabled={payLoading}
-                  style={{
-                    flex: '2',
-                    background: 'linear-gradient(135deg, #10b981, #059669)',
-                    color: '#fff',
-                    padding: '13px',
-                    borderRadius: '50px',
-                    fontSize: '14px',
-                    fontWeight: '700',
-                    border: 'none',
-                    cursor: payLoading ? 'not-allowed' : 'pointer',
-                    boxShadow: '0 8px 18px rgba(16, 185, 129, 0.25)'
-                  }}
-                >
-                  {payLoading ? 'Generating License Voucher...' : `Pay $${currentPlanObj.rawPrice} & Get License Key`}
-                </button>
-              </div>
-            </form>
+              <button
+                type="button"
+                disabled={payLoading}
+                onClick={() => handlePayment('FAILED')}
+                style={{
+                  width: '100%',
+                  background: '#fef2f2',
+                  color: '#dc2626',
+                  border: '1.5px solid #fca5a5',
+                  padding: '10px',
+                  borderRadius: '50px',
+                  fontSize: '13px',
+                  fontWeight: '600',
+                  cursor: payLoading ? 'not-allowed' : 'pointer'
+                }}
+              >
+                ✕ Simulate Bank Failure / Card Decline
+              </button>
+            </div>
+
+            <div style={{ marginTop: '14px' }}>
+              <button
+                type="button"
+                onClick={() => setStep(2)}
+                style={{ background: 'none', border: 'none', color: '#64748b', fontSize: '13px', cursor: 'pointer' }}
+              >
+                ← Back to Details
+              </button>
+            </div>
           </div>
         )}
 
@@ -572,10 +621,10 @@ function Popup({ onClose }) {
           <div>
             <div style={{ fontSize: '42px', marginBottom: '8px' }}>🎉</div>
             <h2 style={{ fontSize: '23px', fontWeight: '800', color: '#111', marginBottom: '4px' }}>
-              License Key <span style={{ color: '#ff6b00' }}>Issued & Encrypted!</span>
+              Payment Verified & <span style={{ color: '#ff6b00' }}>License Issued!</span>
             </h2>
             <p style={{ color: '#666', fontSize: '13.5px', marginBottom: '18px' }}>
-              Your 12-character cryptographic license key is ready. You can register your restaurant account directly on Restaurant360.
+              Your 12-character cryptographic license key has been generated and signed.
             </p>
 
             {/* Glowing Voucher Coupon Box */}
