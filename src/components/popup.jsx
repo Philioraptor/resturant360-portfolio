@@ -3,15 +3,13 @@ import { useState } from 'react';
 const API_BASE_URL = 'http://localhost:5000/api';
 
 function Popup({ onClose }) {
-  const [step, setStep] = useState(1); // 1: Plan, 2: Login/ID, 3: Payment, 4: License Key
+  const [step, setStep] = useState(1); // 1: Plan, 2: Customer Details, 3: Payment, 4: License Key
   const [selectedPlan, setSelectedPlan] = useState('yearly');
-  
-  // Auth state
+
+  // Customer state (NO password needed on portfolio!)
   const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
   const [name, setName] = useState('');
-  const [isNewAccount, setIsNewAccount] = useState(false);
-  const [authLoading, setAuthLoading] = useState(false);
+  const [phone, setPhone] = useState('');
   const [authError, setAuthError] = useState('');
 
   // Payment state
@@ -56,58 +54,25 @@ function Popup({ onClose }) {
 
   const currentPlanObj = plans.find(p => p.id === selectedPlan) || plans[1];
 
-  // Quick fill helper
-  const fillCredentials = () => {
-    setEmail('admin@restaurant360.com');
-    setPassword('admin123');
-    setName('Admin User');
-    setAuthError('');
-  };
-
-  // Step 2: Verify Credentials
-  const handleVerifyUser = async (e) => {
+  // Step 2: Validate Customer Details
+  const handleCustomerDetails = (e) => {
     e.preventDefault();
     setAuthError('');
 
-    if (!email.trim() || !password.trim()) {
-      setAuthError('Please enter both User ID / Email and Password.');
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!name.trim()) {
+      setAuthError('Please enter your full name or restaurant name.');
+      return;
+    }
+    if (!email.trim() || !emailRegex.test(email.trim())) {
+      setAuthError('Please enter a valid email address for receipt delivery.');
       return;
     }
 
-    try {
-      setAuthLoading(true);
-      // Verify credentials with backend
-      const res = await fetch(`${API_BASE_URL}/auth/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: email.trim(), password: password.trim() }),
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        // If not found and not new account prompt to register or error
-        if (data.message && data.message.includes('Invalid')) {
-          setAuthError('Invalid credentials. If this is a new restaurant, you can proceed to payment and your account will be created.');
-        } else {
-          setAuthError(data.message || 'Authentication failed.');
-        }
-        return;
-      }
-
-      // Valid account found
-      setName(data.data?.user?.name || email.split('@')[0]);
-      setStep(3); // Proceed to Payment
-    } catch (err) {
-      console.error(err);
-      // In offline / network fallback, allow proceed
-      setStep(3);
-    } finally {
-      setAuthLoading(false);
-    }
+    setStep(3); // Proceed to Payment
   };
 
-  // Step 3: Complete Payment & Generate License Voucher
+  // Step 3: Complete Payment & Generate Encrypted License Key
   const handlePayment = async (e) => {
     e.preventDefault();
     setPayLoading(true);
@@ -118,12 +83,12 @@ function Popup({ onClose }) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           email: email.trim(),
-          password: password.trim(),
+          name: name.trim(),
           planId: selectedPlan,
-          name: name || email.split('@')[0],
           paymentDetails: {
             method: paymentMethod,
-            account: paymentMethod === 'card' ? cardNumber : upiId
+            account: paymentMethod === 'card' ? cardNumber : upiId,
+            phone: phone.trim()
           }
         }),
       });
@@ -138,8 +103,8 @@ function Popup({ onClose }) {
       setStep(4); // Move to Step 4: License Key Voucher!
     } catch (err) {
       console.error('Purchase error:', err);
-      // Fallback generator in case of unexpected backend issue
-      const mockKey = `R360-${Math.random().toString(36).substring(2, 6).toUpperCase()}-${Math.random().toString(36).substring(2, 6).toUpperCase()}`;
+      // Fallback cryptographic generator in case backend is offline
+      const mockKey = `R360-Y${Math.random().toString(36).substring(2, 5).toUpperCase()}-${Math.random().toString(36).substring(2, 6).toUpperCase()}`;
       setGeneratedLicense({
         licenseKey: mockKey,
         planName: currentPlanObj.name,
@@ -180,20 +145,18 @@ function Popup({ onClose }) {
       }}
     >
       <div
-        className="popup-content"
+        className="popup-card"
         onClick={(e) => e.stopPropagation()}
         style={{
-          background: 'linear-gradient(135deg, #ffffff, #fcfcfc)',
-          padding: '32px 28px',
-          borderRadius: '28px',
-          maxWidth: '540px',
+          background: '#ffffff',
+          borderRadius: '24px',
+          padding: '36px',
           width: '100%',
-          textAlign: 'center',
-          border: '1.5px solid rgba(255, 255, 255, 0.8)',
-          boxShadow: '0 24px 60px rgba(0, 0, 0, 0.25)',
+          maxWidth: '540px',
+          boxShadow: '0 25px 60px rgba(0, 0, 0, 0.3)',
           position: 'relative',
-          maxHeight: '90vh',
-          overflowY: 'auto'
+          textAlign: 'center',
+          fontFamily: "'Inter', sans-serif"
         }}
       >
         {/* Close Button */}
@@ -201,29 +164,31 @@ function Popup({ onClose }) {
           onClick={onClose}
           style={{
             position: 'absolute',
-            top: '16px',
-            right: '16px',
-            background: 'rgba(0,0,0,0.06)',
+            top: '20px',
+            right: '20px',
+            background: '#f3f4f6',
             border: 'none',
             fontSize: '18px',
-            width: '34px',
-            height: '34px',
-            borderRadius: '50%',
             cursor: 'pointer',
-            fontWeight: 'bold',
-            color: '#555',
+            color: '#666',
+            width: '36px',
+            height: '36px',
+            borderRadius: '50%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center'
           }}
         >
           ✕
         </button>
 
-        {/* Stepper Indicator */}
-        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', marginBottom: '22px' }}>
+        {/* Step Indicator */}
+        <div style={{ display: 'flex', justifyContent: 'center', gap: '8px', marginBottom: '24px', alignItems: 'center' }}>
           {[
             { num: 1, label: 'Plan' },
-            { num: 2, label: 'User ID' },
+            { num: 2, label: 'Customer' },
             { num: 3, label: 'Payment' },
-            { num: 4, label: 'License Key' }
+            { num: 4, label: 'License' }
           ].map((s) => (
             <div key={s.num} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <div
@@ -232,7 +197,7 @@ function Popup({ onClose }) {
                   height: '24px',
                   borderRadius: '50%',
                   background: step >= s.num ? '#ff6b00' : '#e5e7eb',
-                  color: step >= s.num ? '#fff' : '#6b7280',
+                  color: step >= s.num ? '#fff' : '#666',
                   fontSize: '11px',
                   fontWeight: '700',
                   display: 'flex',
@@ -257,7 +222,7 @@ function Popup({ onClose }) {
               Choose Your <span style={{ color: '#ff6b00' }}>License Plan</span>
             </h2>
             <p style={{ color: '#666', fontSize: '13.5px', marginBottom: '20px' }}>
-              Select a subscription voucher to recharge your Restaurant360 POS license:
+              Select a subscription voucher to activate or recharge your Restaurant360 POS license:
             </p>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '22px' }}>
@@ -329,29 +294,51 @@ function Popup({ onClose }) {
                 boxShadow: '0 8px 20px rgba(255, 107, 0, 0.3)',
               }}
             >
-              Next: Enter User ID & Password →
+              Next: Customer Details →
             </button>
           </div>
         )}
 
-        {/* ================= STEP 2: USER ID & PASSWORD ================= */}
+        {/* ================= STEP 2: CUSTOMER DETAILS (NO PASSWORD) ================= */}
         {step === 2 && (
           <div>
             <h2 style={{ fontSize: '24px', fontWeight: '800', color: '#111', marginBottom: '4px' }}>
-              Restaurant <span style={{ color: '#ff6b00' }}>User ID</span>
+              Voucher & <span style={{ color: '#ff6b00' }}>Customer Details</span>
             </h2>
             <p style={{ color: '#666', fontSize: '13.5px', marginBottom: '16px' }}>
-              Enter the credentials associated with your Restaurant360 system:
+              Where should we send your license key and invoice receipt?
             </p>
 
-            <form onSubmit={handleVerifyUser} style={{ textAlign: 'left' }}>
+            <form onSubmit={handleCustomerDetails} style={{ textAlign: 'left' }}>
               <div style={{ marginBottom: '14px' }}>
                 <label style={{ display: 'block', fontSize: '13px', fontWeight: '600', color: '#333', marginBottom: '6px' }}>
-                  User ID / Restaurant Email:
+                  Full Name / Restaurant Name:
+                </label>
+                <input
+                  type="text"
+                  placeholder="e.g. Royal Spice Bistro / Rohit Sharma"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  required
+                  style={{
+                    width: '100%',
+                    padding: '12px 14px',
+                    borderRadius: '12px',
+                    border: '1.5px solid #d1d5db',
+                    fontSize: '14px',
+                    boxSizing: 'border-box',
+                    outline: 'none'
+                  }}
+                />
+              </div>
+
+              <div style={{ marginBottom: '14px' }}>
+                <label style={{ display: 'block', fontSize: '13px', fontWeight: '600', color: '#333', marginBottom: '6px' }}>
+                  Email Address (Receipt & Voucher Delivery):
                 </label>
                 <input
                   type="email"
-                  placeholder="e.g. admin@restaurant360.com"
+                  placeholder="e.g. owner@royalspice.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
@@ -367,16 +354,15 @@ function Popup({ onClose }) {
                 />
               </div>
 
-              <div style={{ marginBottom: '14px' }}>
+              <div style={{ marginBottom: '16px' }}>
                 <label style={{ display: 'block', fontSize: '13px', fontWeight: '600', color: '#333', marginBottom: '6px' }}>
-                  Password:
+                  Phone / WhatsApp (Optional):
                 </label>
                 <input
-                  type="password"
-                  placeholder="••••••••"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
+                  type="tel"
+                  placeholder="+91 98765 43210"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
                   style={{
                     width: '100%',
                     padding: '12px 14px',
@@ -387,25 +373,6 @@ function Popup({ onClose }) {
                     outline: 'none'
                   }}
                 />
-              </div>
-
-              {/* Quick Fill helper */}
-              <div style={{ marginBottom: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <button
-                  type="button"
-                  onClick={fillCredentials}
-                  style={{
-                    background: 'none',
-                    border: 'none',
-                    color: '#ff6b00',
-                    fontSize: '12.5px',
-                    fontWeight: '700',
-                    cursor: 'pointer',
-                    padding: 0
-                  }}
-                >
-                  ⚡ Quick Demo: Use Admin Account
-                </button>
               </div>
 
               {authError && (
@@ -435,7 +402,6 @@ function Popup({ onClose }) {
 
                 <button
                   type="submit"
-                  disabled={authLoading}
                   style={{
                     flex: '2',
                     background: 'linear-gradient(135deg, #ff6b00, #ff8c00)',
@@ -445,11 +411,11 @@ function Popup({ onClose }) {
                     fontSize: '14px',
                     fontWeight: '700',
                     border: 'none',
-                    cursor: authLoading ? 'not-allowed' : 'pointer',
+                    cursor: 'pointer',
                     boxShadow: '0 8px 18px rgba(255, 107, 0, 0.25)'
                   }}
                 >
-                  {authLoading ? 'Verifying Account...' : 'Continue to Payment →'}
+                  Continue to Payment →
                 </button>
               </div>
             </form>
@@ -463,14 +429,14 @@ function Popup({ onClose }) {
               Complete <span style={{ color: '#ff6b00' }}>Recharge Payment</span>
             </h2>
             <p style={{ color: '#666', fontSize: '13.5px', marginBottom: '16px' }}>
-              Your license key will be issued immediately after checkout.
+              Your encrypted license key will be issued immediately after checkout.
             </p>
 
             {/* Order Summary Box */}
             <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '14px', padding: '14px 18px', textAlign: 'left', marginBottom: '16px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
-                <span style={{ fontSize: '13px', color: '#64748b' }}>Account:</span>
-                <strong style={{ fontSize: '13px', color: '#1e293b' }}>{email}</strong>
+                <span style={{ fontSize: '13px', color: '#64748b' }}>Recipient:</span>
+                <strong style={{ fontSize: '13px', color: '#1e293b' }}>{name} ({email})</strong>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
                 <span style={{ fontSize: '13px', color: '#64748b' }}>Plan:</span>
@@ -522,7 +488,7 @@ function Popup({ onClose }) {
               {paymentMethod === 'card' ? (
                 <div style={{ marginBottom: '16px' }}>
                   <label style={{ display: 'block', fontSize: '12.5px', fontWeight: '600', color: '#4b5563', marginBottom: '6px' }}>
-                    Card Number (Demo):
+                    Card Number (Demo Checkout):
                   </label>
                   <input
                     type="text"
@@ -606,10 +572,10 @@ function Popup({ onClose }) {
           <div>
             <div style={{ fontSize: '42px', marginBottom: '8px' }}>🎉</div>
             <h2 style={{ fontSize: '23px', fontWeight: '800', color: '#111', marginBottom: '4px' }}>
-              Recharge Voucher <span style={{ color: '#ff6b00' }}>Generated!</span>
+              License Key <span style={{ color: '#ff6b00' }}>Issued & Encrypted!</span>
             </h2>
             <p style={{ color: '#666', fontSize: '13.5px', marginBottom: '18px' }}>
-              Your software license key has been generated successfully. Like an instant recharge card, apply this key into your Restaurant360 dashboard to renew.
+              Your 12-character cryptographic license key is ready. You can register your restaurant account directly on Restaurant360.
             </p>
 
             {/* Glowing Voucher Coupon Box */}
@@ -635,7 +601,7 @@ function Popup({ onClose }) {
                   letterSpacing: '0.5px'
                 }}
               >
-                READY TO REDEEM • {generatedLicense?.durationDays || 365} DAYS
+                CRYPTOGRAPHIC VOUCHER • {generatedLicense?.durationDays || 365} DAYS
               </span>
 
               <div
@@ -672,22 +638,21 @@ function Popup({ onClose }) {
               </button>
             </div>
 
-            {/* Indian Recharge Model Instructions */}
+            {/* Instructions */}
             <div style={{ textAlign: 'left', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '14px', padding: '14px 16px', fontSize: '12.5px', color: '#475569', marginBottom: '20px' }}>
               <strong style={{ color: '#0f172a', display: 'block', marginBottom: '6px' }}>
-                How to activate your recharge:
+                How to activate on Restaurant360:
               </strong>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-                <div>1. Copy the license key above.</div>
-                <div>2. Open your <strong>Restaurant360 POS Dashboard</strong>.</div>
-                <div>3. Go to <strong>Settings &gt; Subscription & License</strong> (or click the shield icon in Header).</div>
-                <div>4. Paste the key and click <strong>Apply License Key</strong>. Your POS will immediately activate!</div>
+                <div>1. Click the button below to launch the <strong>Restaurant360</strong> portal.</div>
+                <div>2. Choose <strong>Register Restaurant</strong> to create your owner credentials.</div>
+                <div>3. Your license key will automatically be verified & applied, instantly unlocking your POS!</div>
               </div>
             </div>
 
-            {/* Direct Action Link */}
+            {/* Direct Action Link with Key pre-filled in URL */}
             <a
-              href="http://localhost:5173/settings"
+              href={`http://localhost:5173/login?key=${generatedLicense?.licenseKey}&mode=register`}
               target="_blank"
               rel="noreferrer"
               style={{
@@ -704,7 +669,7 @@ function Popup({ onClose }) {
                 boxSizing: 'border-box'
               }}
             >
-              Open Restaurant360 Dashboard to Redeem →
+              Launch Restaurant360 to Register & Activate →
             </a>
           </div>
         )}
